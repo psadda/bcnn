@@ -1,15 +1,11 @@
 import os
 
 import numpy as np
-from sacred import Experiment
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow.keras.callbacks import Callback
 from tensorflow.keras.losses import binary_crossentropy
 import tensorflow_probability as tfp
-
-ex = Experiment()
-ex.add_config("configs/toy_config.json")
 
 
 def round_down(num, factor):
@@ -77,7 +73,6 @@ def variational_free_energy_loss(model, scale_factor, kl_alpha):
     return loss
 
 
-@ex.capture
 def normal_prior(prior_std):
     """Defines normal distribution prior for Bayesian neural network."""
 
