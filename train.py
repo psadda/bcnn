@@ -5,13 +5,12 @@ from tensorflow.keras.callbacks import Callback, EarlyStopping, LearningRateSche
 
 from dataset import get_train_data
 from model import get_model
-from utils import AnnealingCallback, ex
+from utils import AnnealingCallback
 
 # Ignores TensorFlow CPU messages.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
-@ex.capture
 def schedule(epoch, initial_learning_rate, lr_decay_start_epoch):
     """Defines exponentially decaying learning rate."""
 
@@ -21,7 +20,6 @@ def schedule(epoch, initial_learning_rate, lr_decay_start_epoch):
         return initial_learning_rate * math.exp((10 * initial_learning_rate) * (lr_decay_start_epoch - epoch))
 
 
-@ex.automain
 def train(weights_path, epochs, batch_size, initial_epoch,
           kl_start_epoch, kl_alpha_increase_per_epoch):
     """Trains a model."""
@@ -47,4 +45,3 @@ def train(weights_path, epochs, batch_size, initial_epoch,
               initial_epoch=initial_epoch,
               callbacks=[checkpointer, scheduler, annealer],
               validation_data=(valid, valid_targets))
-
