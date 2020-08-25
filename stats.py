@@ -5,12 +5,11 @@ from brokenaxes import brokenaxes
 import matplotlib.pyplot as plt
 import numpy as np
 
-from utils import acc, ex
+from utils import acc
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
-@ex.capture
 def stats(predict_dir):
     """Calculates prediction and uncertainty statistics."""
 
@@ -77,10 +76,13 @@ def plots(images_dir, predict_dir):
     plt.clf()
 
 
-@ex.automain
 def get_stats_and_plots(images_dir):
     os.makedirs(images_dir + "/bayesian", exist_ok=True)
     os.makedirs(images_dir + "/dropout", exist_ok=True)
 
     stats()
     plots()
+
+
+if __name__ == "__main__":
+    get_stats_and_plots(images_dir)
