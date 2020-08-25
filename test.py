@@ -14,7 +14,6 @@ from utils import ex, round_down
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 
-@ex.capture
 def plots(bayesian, predict_dir, images_dir, lower_percentile, upper_percentile):
     prefix = "/bayesian/bayesian_" if bayesian else "/dropout/dropout_"
 
@@ -50,7 +49,6 @@ def plots(bayesian, predict_dir, images_dir, lower_percentile, upper_percentile)
         plt.imsave(images_dir + "/target_{}.png".format(i), trg, cmap="Greys")
 
 
-@ex.capture
 def save_predictions(sigmoids, pred, test, test_targets,
                      bayesian, predict_dir, images_dir):
     """Saves results of predictions."""
@@ -68,30 +66,7 @@ def save_predictions(sigmoids, pred, test, test_targets,
     np.save(predict_dir + "/test.npy", test)
     np.save(predict_dir + "/test_targets.npy", test_targets)
 
-    # Plots four slices from each output numpy array.
-    #four_slices = range(test.shape[0] // 5, test.shape[0], test.shape[0] // 5)
-    #for i in four_slices:
-        #pred_slice = pred[i, :, :].squeeze()
-        #img = test[i, :, :].squeeze()
-        #trg = test_targets[i, :, :].squeeze()
 
-        # Adds color bar to uncertainty map and saves.
-        #fig, ax = plt.subplots()
-        #divider = make_axes_locatable(ax)
-        #cax = divider.append_axes("right", size="5%", pad=0.05)
-        #im = ax.imshow(unc_slice, cmap=cc.cm.CET_L19)
-        #fig.colorbar(im, cax=cax, orientation="vertical")
-        #plt.savefig(images_dir + prefix + "unc_{}.png".format(i))
-        #plt.close()
-
-        # Saves image plots.
-        #plt.imsave(images_dir + prefix + "pred_{}.png".format(i),
-        #           pred_slice, cmap="Greys")
-        #plt.imsave(images_dir + "/img_{}.png".format(i), img, cmap="Greys")
-        #plt.imsave(images_dir + "/target_{}.png".format(i), trg, cmap="Greys")
-
-
-@ex.capture
 def predict(model, test, test_targets, test_coords, test_shape,
             input_shape, vnet, bayesian, batch_size, border_trim, mc_samples):
     """Uses given model to predict on test data."""
@@ -194,7 +169,6 @@ def predict(model, test, test_targets, test_coords, test_shape,
     save_predictions(sigmoids, pred, test, test_targets)
 
 
-@ex.automain
 def test(weights_path, batch_size):
     """Tests a model."""
 
@@ -217,3 +191,7 @@ def test(weights_path, batch_size):
     predict(model, test, test_targets, test_coords,
             orig_test_shape, input_shape)
     plots()
+
+   
+if __name__ == "__main__":
+    test(weights_path, batch_size)
