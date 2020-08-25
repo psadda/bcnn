@@ -8,7 +8,7 @@ import numpy as np
 
 from dataset import add_chunk_to_arr, get_test_data, reconstruct
 from model import get_model
-from utils import ex, round_down
+from utils import round_down
 
 # Ignores TensorFlow CPU messages.
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
