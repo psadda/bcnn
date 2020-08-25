@@ -2,10 +2,9 @@ import os
 import numpy as np
 import pickle
 
-from utils import absolute_file_paths, ex, round_down, standardize
+from utils import absolute_file_paths, round_down, standardize
 
 
-@ex.capture
 def chunks(arr, batch_size, num_gpus, step, window, trim=True):
     """Chunks a 4D numpy array into smaller 4D arrays."""
 
@@ -69,7 +68,7 @@ def chunks(arr, batch_size, num_gpus, step, window, trim=True):
 
     return new, coords, shape
 
-@ex.capture
+
 def reconstruct(arr, coords, shape, window):
     """Reconstructs a 4D numpy array from its generated chunks."""
 
@@ -98,7 +97,6 @@ def add_chunk_to_arr(arr, chunk, coords, shape):
     return arr
 
 
-@ex.capture
 def load_data(files, vnet, batch_size, num_gpus, norm):
     """Loads and preprocesses data."""
 
@@ -113,25 +111,6 @@ def load_data(files, vnet, batch_size, num_gpus, norm):
     # If all the same shape, concat.
     elif len(set([sub_arr.shape for sub_arr in arr])) == 1:
         arr = np.concatenate(arr)
-    # If different shapes and 3D, chunk then concat.
-    elif vnet:
-        # TODO: Somehow save coords and orig_shape for each sub_arr.
-        # Low priority because this block only used for training data right now.
-        if arr[0].ndim == 4 and arr[0].shape[3] == 2:
-            arr = [sub_arr[:, :, :, 1] for sub_arr in arr]
-        elif arr[0].ndim == 4:
-            arr = [sub_arr[:, :, :, 0] for sub_arr in arr]
-        arr = [np.expand_dims(sub_arr, axis=3) for sub_arr in arr]
-
-        chunked = [chunks(sub_arr, trim=False) for sub_arr in arr]
-        arr = np.concatenate([chunk[0] for chunk in chunked])
-
-        # Avoids https://github.com/keras-team/keras/issues/11434
-        last_batch_gpus = (arr.shape[0] % batch_size) % num_gpus
-        if last_batch_gpus != 0:
-            arr = arr[:-last_batch_gpus, :, :, :, :]
-
-        return arr, None, None
 
     # 2D case with different shapes not implemented
     else:
@@ -144,21 +123,9 @@ def load_data(files, vnet, batch_size, num_gpus, norm):
         arr = arr[:, :, :, 0]
     arr = np.expand_dims(arr, axis=3)
 
-    # Chunks data if necessary.
-    if vnet:
-        arr, coords, orig_shape = chunks(arr)
-    else:
-        # Avoids https://github.com/keras-team/keras/issues/11434
-        last_batch_gpus = (arr.shape[0] % batch_size) % num_gpus
-        if last_batch_gpus != 0:
-            arr = arr[:-last_batch_gpus, :, :, :]
-            coords = None
-            orig_shape = arr.shape
-
     return arr, coords, orig_shape
 
 
-@ex.capture
 def save_train_data(train_path, valid_path, train_targets_path,
                     valid_targets_path, orig_train_dir, orig_valid_dir,
                     orig_train_targets_dir, orig_valid_targets_dir):
@@ -185,7 +152,6 @@ def save_train_data(train_path, valid_path, train_targets_path,
     return train, valid, train_targets, valid_targets
 
 
-@ex.capture
 def save_test_data(test_path, test_targets_path, test_coords_path,
                    test_shape_path, orig_test_dir, orig_test_targets_dir):
     """Loads, formats, and re-saves test data from original directories."""
@@ -208,7 +174,6 @@ def save_test_data(test_path, test_targets_path, test_coords_path,
     return test, test_targets, test_coords, test_shape
 
 
-@ex.capture
 def get_train_data(data_dir):
     """Loads or creates train data."""
     print ('in get_train_data')
@@ -242,7 +207,6 @@ def get_train_data(data_dir):
     return input_shape, train, valid, train_targets, valid_targets
 
 
-@ex.automain
 def get_test_data(data_dir):
     """Loads or creates test data."""
     print ('in get_test_data')
